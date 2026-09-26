@@ -19,6 +19,7 @@ var lock_timer := -1.0
 var reset_count := 0
 var paused := false
 var soft_drop_held := false
+var music_enabled := true
 var buttons: Array[Button] = []
 
 func _ready() -> void:
@@ -40,6 +41,7 @@ func _build_controls() -> void:
 	_create_button("⟲", "rotate_ccw", Vector2(270, 700))
 	_create_button("⟳", "rotate_cw", Vector2(350, 700))
 	_create_button("⤓", "hard_drop", Vector2(310, 758))
+	_create_button("♪", "music", Vector2(400, 758))
 	_create_button("HOLD", "hold", Vector2(20, 816), Vector2(140, 48))
 	_create_button("PAUSE", "pause", Vector2(180, 816), Vector2(140, 48))
 	_create_button("RESTART", "restart", Vector2(340, 816), Vector2(140, 48))
@@ -102,6 +104,11 @@ func _on_action(action: String) -> void:
 		lock_timer = -1.0
 		reset_count = 0
 		soft_drop_held = false
+		queue_redraw()
+		return
+	if action == "music":
+		music_enabled = not music_enabled
+		music.set_enabled(music_enabled)
 		queue_redraw()
 		return
 	if action == "pause":

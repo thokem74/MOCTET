@@ -1,0 +1,8 @@
+MOCTET AUDIO NOTICE
+
+File: audio/korobeiniki_arcade.ogg
+Source arrangement: korobeiniki-arcade-fullver.mp3
+Source: https://github.com/uncle-sheepsky/duru-ai-cc0-bgm
+License: CC0 1.0 Universal
+License page: https://github.com/uncle-sheepsky/duru-ai-cc0-bgm/blob/main/LICENSE
+The source repository identifies this arrangement as an independent CC0 arrangement of the public-domain Korobeiniki melody. It is not affiliated with or endorsed by Tetris Holding, LLC.
