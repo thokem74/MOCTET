@@ -18,6 +18,7 @@ var fall_timer := 0.0
 var lock_timer := -1.0
 var reset_count := 0
 var paused := false
+var soft_drop_held := false
 var buttons: Array[Button] = []
 
 func _ready() -> void:
@@ -36,8 +37,8 @@ func _build_controls() -> void:
 	_create_button("◀", "move_left", Vector2(20, 700))
 	_create_button("▶", "move_right", Vector2(100, 700))
 	_create_button("▼", "soft_drop", Vector2(60, 758))
-	_create_button("⟳", "rotate_cw", Vector2(270, 700))
-	_create_button("⟲", "rotate_ccw", Vector2(350, 700))
+	_create_button("⟲", "rotate_ccw", Vector2(270, 700))
+	_create_button("⟳", "rotate_cw", Vector2(350, 700))
 	_create_button("⤓", "hard_drop", Vector2(310, 758))
 	_create_button("HOLD", "hold", Vector2(20, 816), Vector2(140, 48))
 	_create_button("PAUSE", "pause", Vector2(180, 816), Vector2(140, 48))
@@ -52,7 +53,11 @@ func _create_button(label: String, action: String, base: Vector2, size := Vector
 	button.add_theme_stylebox_override("normal", _button_box(PANEL))
 	button.add_theme_stylebox_override("pressed", _button_box(Color("#2d3450")))
 	button.set_meta("action", action)
-	button.pressed.connect(_on_action.bind(action))
+	if action == "soft_drop":
+		button.button_down.connect(_on_soft_drop_down)
+		button.button_up.connect(_on_soft_drop_up)
+	else:
+		button.pressed.connect(_on_action.bind(action))
 	add_child(button)
 	buttons.append(button)
 	_layout_button(button, base, size)
@@ -82,6 +87,13 @@ func _notification(what: int) -> void:
 		for button in buttons:
 			_layout_button(button, button.get_meta("base"), button.get_meta("button_size"))
 
+func _on_soft_drop_down() -> void:
+	soft_drop_held = true
+	_on_action("soft_drop")
+
+func _on_soft_drop_up() -> void:
+	soft_drop_held = false
+
 func _on_action(action: String) -> void:
 	if action == "restart":
 		game.reset()
@@ -89,6 +101,7 @@ func _on_action(action: String) -> void:
 		fall_timer = 0.0
 		lock_timer = -1.0
 		reset_count = 0
+		soft_drop_held = false
 		queue_redraw()
 		return
 	if action == "pause":
@@ -123,6 +136,11 @@ func _changed(changed: bool) -> void:
 		reset_count += 1
 
 func _unhandled_key_input(event: InputEvent) -> void:
+	if event.keycode == KEY_DOWN:
+		soft_drop_held = event.pressed
+		if event.pressed and not event.echo:
+			_on_action("soft_drop")
+		return
 	if not event.pressed or event.echo:
 		return
 	if event.keycode == KEY_Q or event.keycode == KEY_ESCAPE:
@@ -149,8 +167,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _process(delta: float) -> void:
 	if not paused and not game.over:
 		fall_timer += delta
-		if fall_timer >= game.get_interval():
-			game.move(0, 1)
+		var fall_interval = 0.045 if soft_drop_held else game.get_interval()
+		if fall_timer >= fall_interval:
+			if game.move(0, 1) and soft_drop_held:
+				game.score += 1
 			fall_timer = 0.0
 		if game.fits(null, game.x, game.y + 1):
 			lock_timer = -1.0
@@ -200,8 +220,8 @@ func _draw() -> void:
 	_draw_text(font, origin + Vector2(405, 300) * scale, "LEVEL", 12, MUTED, scale)
 	_draw_text(font, origin + Vector2(405, 326) * scale, "%02d" % game.get_level(), 20, TEXT, scale)
 	_draw_text(font, origin + Vector2(20, 365) * scale, "LINES  %03d" % game.lines, 13, MUTED, scale)
-	_draw_text(font, origin + Vector2(20, 400) * scale, game.notice, 11, ACCENT, scale)
-	_draw_text(font, origin + Vector2(20, 440) * scale, "[ PAUSED ]" if paused else "[ SESSION OVER ]" if game.over else "[ IN FLOW ]", 14, ACCENT, scale)
+	_draw_text(font, origin + Vector2(20, 665) * scale, game.notice, 11, ACCENT, scale)
+	_draw_text(font, origin + Vector2(20, 685) * scale, "[ PAUSED ]" if paused else "[ SESSION OVER ]" if game.over else "[ IN FLOW ]", 14, ACCENT, scale)
 	if paused or game.over:
 		var overlay := Rect2(board_rect.position + Vector2(12, 250) * scale, Vector2(256, 90) * scale)
 		draw_rect(overlay, Color("#24283b"))

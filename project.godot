@@ -25,6 +25,7 @@ window/size/viewport_width=500
 window/size/viewport_height=900
 window/size/window_width_override=500
 window/size/window_height_override=900
+window/frame_pacing/android/enable_frame_pacing=false
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/handheld/orientation=1
@@ -89,5 +90,4 @@ restart_game={
 
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="gl_compatibility"
-renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
