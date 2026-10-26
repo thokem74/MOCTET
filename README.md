@@ -27,6 +27,8 @@ The layout scales to the available screen area and respects Android display cuto
 
 ## Run
 
+The app and Android launcher use the generated block-M icon in `assets/icons/moctet.png`, including adaptive launcher masks. Its generation prompts are recorded in `assets/icons/PROMPT.md`.
+
 Open `project.godot` in Godot 4.7 and run the main scene, or launch from the project directory:
 
 ```sh
