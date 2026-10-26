@@ -21,8 +21,6 @@ var kind := "T"
 var shape: Array = []
 var x := 3
 var y := 0
-var held := ""
-var hold_used := false
 var score := 0
 var lines := 0
 var over := false
@@ -33,12 +31,7 @@ func _init(seed_value := -1):
 		rng.seed = seed_value
 	else:
 		rng.randomize()
-	for row in HEIGHT:
-		board.append([])
-		for col in WIDTH:
-			board[row].append("")
-	refill()
-	spawn()
+	reset()
 
 func get_level() -> int:
 	return lines / 10 + 1
@@ -139,7 +132,6 @@ func lock_piece() -> void:
 	lines += cleared
 	if cleared > 0:
 		notice = ["", "SINGLE / CLEAN", "DOUBLE / FLOW", "TRIPLE / SYNC", "TETRIS / PERFECT"][cleared]
-	hold_used = false
 	spawn()
 
 func _row_full(row: Array) -> bool:
@@ -154,20 +146,9 @@ func _empty_row() -> Array:
 		row.append("")
 	return row
 
-func hold_piece() -> bool:
-	if over or hold_used:
-		return false
-	var old := held
-	held = kind
-	spawn(old)
-	hold_used = true
-	return true
-
 func reset() -> void:
 	board.clear()
 	queue.clear()
-	held = ""
-	hold_used = false
 	score = 0
 	lines = 0
 	over = false

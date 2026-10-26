@@ -38,6 +38,7 @@ func _build_controls() -> void:
 	for child in get_children():
 		if child is Button:
 			child.queue_free()
+	buttons.clear()
 	_create_button("◀", "move_left", Vector2(20, 700))
 	_create_button("▶", "move_right", Vector2(100, 700))
 	_create_button("▼", "soft_drop", Vector2(60, 758))
@@ -45,9 +46,8 @@ func _build_controls() -> void:
 	_create_button("⟳", "rotate_cw", Vector2(350, 700))
 	_create_button("⤓", "hard_drop", Vector2(310, 758))
 	_create_button("♪", "music", Vector2(400, 758))
-	_create_button("HOLD", "hold", Vector2(20, 816), Vector2(140, 48))
-	_create_button("PAUSE", "pause", Vector2(180, 816), Vector2(140, 48))
-	_create_button("RESTART", "restart", Vector2(340, 816), Vector2(140, 48))
+	_create_button("PAUSE", "pause", Vector2(20, 816), Vector2(220, 48))
+	_create_button("RESTART", "restart", Vector2(260, 816), Vector2(220, 48))
 
 func _create_button(label: String, action: String, base: Vector2, size := Vector2(60, 48)) -> void:
 	var button := Button.new()
@@ -208,10 +208,6 @@ func _on_action(action: String) -> void:
 			lock_timer = -1.0
 		"rotate_cw": _changed(game.rotate(true))
 		"rotate_ccw": _changed(game.rotate(false))
-		"hold":
-			if game.hold_piece():
-				fall_timer = 0.0
-				lock_timer = -1.0
 	queue_redraw()
 
 func _changed(changed: bool) -> void:
@@ -234,16 +230,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		_on_action("restart")
 	elif event.keycode == KEY_P:
 		_on_action("pause")
-	elif event.keycode == KEY_C:
-		_on_action("hold")
 	elif event.keycode == KEY_SPACE:
 		_on_action("hard_drop")
 	elif event.keycode == KEY_LEFT:
 		_on_action("move_left")
 	elif event.keycode == KEY_RIGHT:
 		_on_action("move_right")
-	elif event.keycode == KEY_DOWN:
-		_on_action("soft_drop")
 	elif event.keycode == KEY_UP:
 		_on_action("rotate_cw")
 	elif event.keycode == KEY_Z:
@@ -300,8 +292,7 @@ func _draw() -> void:
 			if cell.y >= 0:
 				var piece_rect := Rect2(board_rect.position + Vector2(cell.x * 28 + 3, cell.y * 28 + 3) * scale, Vector2(25, 25) * scale)
 				draw_rect(piece_rect, PIECE_COLORS[game.kind])
-	_draw_panel(font, origin + Vector2(20, 76) * scale, "HOLD", game.held, scale)
-	_draw_panel(font, origin + Vector2(405, 76) * scale, "NEXT", game.queue.slice(0, 3), scale)
+	_draw_next(font, origin + Vector2(405, 76) * scale, scale)
 	_draw_text(font, origin + Vector2(20, 300) * scale, "SCORE", 12, MUTED, scale)
 	_draw_text(font, origin + Vector2(20, 326) * scale, "%08d" % game.score, 20, TEXT, scale)
 	_draw_text(font, origin + Vector2(405, 300) * scale, "LEVEL", 12, MUTED, scale)
@@ -315,18 +306,12 @@ func _draw() -> void:
 		_draw_text(font, overlay.position + Vector2(30, 30) * scale, "PAUSED" if paused else "SESSION OVER", 22, TEXT, scale)
 		_draw_text(font, overlay.position + Vector2(42, 60) * scale, "TAP RESTART TO PLAY", 11, MUTED, scale)
 
-func _draw_panel(font: Font, at: Vector2, title: String, value, scale: float) -> void:
-	_draw_text(font, at, title, 12, MUTED, scale)
-	if value is String:
-		_draw_piece_preview(at + Vector2(0, 20) * scale, value, scale)
-	else:
-		for i in min(3, value.size()):
-			_draw_piece_preview(at + Vector2(0, 20 + i * 54) * scale, value[i], scale)
+func _draw_next(font: Font, at: Vector2, scale: float) -> void:
+	_draw_text(font, at, "NEXT", 12, MUTED, scale)
+	for i in min(3, game.queue.size()):
+		_draw_piece_preview(at + Vector2(0, 20 + i * 54) * scale, game.queue[i], scale)
 
 func _draw_piece_preview(at: Vector2, piece: String, scale: float) -> void:
-	if piece.is_empty():
-		_draw_text(ThemeDB.fallback_font, at, "--", 16, MUTED, scale)
-		return
 	for cell in MoctetGame.SHAPES[piece]:
 		draw_rect(Rect2(at + Vector2(cell.x * 12, cell.y * 12) * scale, Vector2(10, 10) * scale), PIECE_COLORS[piece])
 
