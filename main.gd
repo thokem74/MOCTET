@@ -19,6 +19,9 @@ var lock_timer := -1.0
 var reset_count := 0
 var paused := false
 var soft_drop_held := false
+var keyboard_soft_drop_held := false
+var mouse_soft_drop_held := false
+var touch_buttons: Dictionary = {}
 var music_enabled := true
 var buttons: Array[Button] = []
 
@@ -49,6 +52,8 @@ func _build_controls() -> void:
 func _create_button(label: String, action: String, base: Vector2, size := Vector2(60, 48)) -> void:
 	var button := Button.new()
 	button.text = label
+	button.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
+	button.focus_mode = Control.FOCUS_NONE
 	button.add_theme_font_size_override("font_size", 18 if label.length() < 5 else 13)
 	button.add_theme_color_override("font_color", TEXT)
 	button.add_theme_color_override("font_hover_color", Color.WHITE)
@@ -85,16 +90,65 @@ func _layout_button(button: Button, base: Vector2, button_size: Vector2) -> void
 	button.set_meta("button_size", button_size)
 
 func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		_clear_held_inputs()
 	if what == NOTIFICATION_RESIZED:
 		for button in buttons:
 			_layout_button(button, button.get_meta("base"), button.get_meta("button_size"))
 
 func _on_soft_drop_down() -> void:
-	soft_drop_held = true
+	mouse_soft_drop_held = true
+	_update_soft_drop()
 	_on_action("soft_drop")
 
 func _on_soft_drop_up() -> void:
-	soft_drop_held = false
+	mouse_soft_drop_held = false
+	_update_soft_drop()
+
+# Handle each finger separately before GUI input. Mouse emulation can only
+# represent one finger, and a release outside a Button can discard a quick tap.
+func _input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch:
+		if event.pressed and not event.canceled:
+			_release_touch(event.index)
+			for button in buttons:
+				if button.is_visible_in_tree() and not button.disabled and button.get_global_rect().has_point(event.position):
+					touch_buttons[event.index] = button
+					button.add_theme_stylebox_override("normal", _button_box(Color("#2d3450")))
+					_update_soft_drop()
+					_on_action(button.get_meta("action"))
+					break
+		else:
+			_release_touch(event.index)
+		get_viewport().set_input_as_handled()
+	elif event is InputEventScreenDrag:
+		if touch_buttons.has(event.index):
+			var button: Button = touch_buttons[event.index]
+			if not button.get_global_rect().has_point(event.position):
+				_release_touch(event.index)
+		get_viewport().set_input_as_handled()
+
+func _release_touch(index: int) -> void:
+	if not touch_buttons.has(index):
+		return
+	var button: Button = touch_buttons[index]
+	touch_buttons.erase(index)
+	if not touch_buttons.values().has(button):
+		button.add_theme_stylebox_override("normal", _button_box(PANEL))
+	_update_soft_drop()
+
+func _update_soft_drop() -> void:
+	soft_drop_held = keyboard_soft_drop_held or mouse_soft_drop_held
+	for button in touch_buttons.values():
+		if button.get_meta("action") == "soft_drop":
+			soft_drop_held = true
+
+func _clear_held_inputs() -> void:
+	keyboard_soft_drop_held = false
+	mouse_soft_drop_held = false
+	for index in touch_buttons.keys():
+		_release_touch(index)
+	_update_soft_drop()
 
 func _on_action(action: String) -> void:
 	if action == "restart":
@@ -103,7 +157,7 @@ func _on_action(action: String) -> void:
 		fall_timer = 0.0
 		lock_timer = -1.0
 		reset_count = 0
-		soft_drop_held = false
+		_clear_held_inputs()
 		queue_redraw()
 		return
 	if action == "music":
@@ -114,6 +168,7 @@ func _on_action(action: String) -> void:
 	if action == "pause":
 		if not game.over:
 			paused = not paused
+			_clear_held_inputs()
 		queue_redraw()
 		return
 	if paused or game.over:
@@ -144,7 +199,8 @@ func _changed(changed: bool) -> void:
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event.keycode == KEY_DOWN:
-		soft_drop_held = event.pressed
+		keyboard_soft_drop_held = event.pressed
+		_update_soft_drop()
 		if event.pressed and not event.echo:
 			_on_action("soft_drop")
 		return
