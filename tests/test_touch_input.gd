@@ -112,12 +112,12 @@ func _run() -> void:
 		var scale: float = main._layout_scale(area)
 		var origin: Vector2 = main._layout_origin(area, scale)
 		var grid := Rect2(origin + Vector2(110, 76) * scale, Vector2(280, 560) * scale)
-		var first := _button("rotate_ccw").get_global_rect()
+		var first := _button("move_left").get_global_rect()
 		var previous_right := first.position.x - 12.0 * scale
-		for action in ["rotate_ccw", "move_left", "move_right", "rotate_cw"]:
+		for action in ["move_left", "move_right"]:
 			var button := _button(action)
 			var rect := button.get_global_rect()
-			_check(rect.size.is_equal_approx(Vector2(100, 80) * scale), "Top row buttons have larger touch targets")
+			_check(rect.size.is_equal_approx(Vector2(212, 80) * scale), "Movement buttons have wider touch targets")
 			_check(is_equal_approx(rect.position.x - previous_right, 12.0 * scale), "Top row has 12-unit gaps in the requested order")
 			_check(is_equal_approx(rect.position.y, first.position.y), "Top row buttons align")
 			_check(button.get_theme_font_size("font_size") == 32, "Gameplay symbols use larger text")
@@ -125,6 +125,17 @@ func _run() -> void:
 		var row_center := (first.position.x + previous_right) * 0.5
 		var drop := _button("soft_drop").get_global_rect()
 		_check(is_equal_approx(row_center, area.get_center().x), "Top row is horizontally centered")
+		previous_right = first.position.x - 12.0 * scale
+		for action in ["rotate_ccw", "soft_drop", "rotate_cw"]:
+			var button := _button(action)
+			var rect := button.get_global_rect()
+			var expected_size := Vector2(112, 72) if action == "soft_drop" else Vector2(150, 72)
+			_check(rect.size.is_equal_approx(expected_size * scale), "Lower row has the requested button widths")
+			_check(is_equal_approx(rect.position.x - previous_right, 12.0 * scale), "Lower row has 12-unit gaps in the requested order")
+			_check(is_equal_approx(rect.position.y, drop.position.y), "Lower row buttons align")
+			_check(button.get_theme_font_size("font_size") == 32, "Lower row symbols use larger text")
+			previous_right = rect.end.x
+		_check(is_equal_approx(previous_right, _button("move_right").get_global_rect().end.x), "Both rows have equal widths")
 		_check(is_equal_approx(drop.get_center().x, row_center), "Soft drop is centered under the row")
 		_check(drop.size.is_equal_approx(Vector2(112, 72) * scale), "Soft drop has a larger touch target")
 		_check(is_equal_approx(drop.position.y - first.end.y, 12.0 * scale), "Soft drop has a 12-unit gap")

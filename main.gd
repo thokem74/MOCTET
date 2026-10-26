@@ -35,15 +35,9 @@ func _ready() -> void:
 	set_process(true)
 
 func _build_controls() -> void:
-	for child in get_children():
-		if child is Button:
-			child.queue_free()
 	buttons.clear()
-	_create_button("⟲", "rotate_ccw", Vector2(32, 0))
-	_create_button("◀", "move_left", Vector2(144, 0))
-	_create_button("▶", "move_right", Vector2(256, 0))
-	_create_button("⟳", "rotate_cw", Vector2(368, 0))
-	_create_button("▼", "soft_drop", Vector2(194, 92), Vector2(112, 72))
+	for button: Button in $GameplayControls.get_children():
+		_configure_button(button, button.get_meta("action"), button.position, button.size, true)
 	_create_button("PAUSE", "pause", Vector2(400, 420), Vector2(90, 64), false)
 	_create_button("RESTART", "restart", Vector2(400, 496), Vector2(90, 64), false)
 	_create_button("MUSIC ON" if music_enabled else "MUSIC OFF", "music", Vector2(400, 572), Vector2(90, 64), false)
@@ -51,6 +45,10 @@ func _build_controls() -> void:
 func _create_button(label: String, action: String, base: Vector2, size := Vector2(100, 80), gameplay_group := true) -> void:
 	var button := Button.new()
 	button.text = label
+	add_child(button)
+	_configure_button(button, action, base, size, gameplay_group)
+
+func _configure_button(button: Button, action: String, base: Vector2, size: Vector2, gameplay_group: bool) -> void:
 	button.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
 	button.focus_mode = Control.FOCUS_NONE
 	button.add_theme_font_size_override("font_size", 32 if gameplay_group else 15)
@@ -65,7 +63,6 @@ func _create_button(label: String, action: String, base: Vector2, size := Vector
 		button.button_up.connect(_on_soft_drop_up)
 	else:
 		button.pressed.connect(_on_action.bind(action))
-	add_child(button)
 	buttons.append(button)
 	_layout_button(button, base, size)
 
@@ -85,7 +82,9 @@ func _layout_button(button: Button, base: Vector2, button_size: Vector2) -> void
 	var scale := _layout_scale(area)
 	var origin := _layout_origin(area, scale)
 	if button.get_meta("gameplay_group"):
-		origin = _gameplay_origin(area, scale)
+		# Keep row positions local to the scene-authored gameplay group.
+		$GameplayControls.position = _gameplay_origin(area, scale)
+		origin = Vector2.ZERO
 	button.position = origin + base * scale
 	button.scale = Vector2.ONE * scale
 	button.size = button_size

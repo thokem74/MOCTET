@@ -6,3 +6,63 @@
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_ig7tw")
+
+[node name="GameplayControls" type="Control" parent="."]
+layout_mode = 0
+offset_top = 706.0
+offset_right = 500.0
+offset_bottom = 870.0
+mouse_filter = 2
+
+[node name="MoveLeft" type="Button" parent="GameplayControls"]
+layout_mode = 0
+offset_left = 32.0
+offset_right = 244.0
+offset_bottom = 80.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 32
+text = "◀"
+metadata/action = "move_left"
+
+[node name="MoveRight" type="Button" parent="GameplayControls"]
+layout_mode = 0
+offset_left = 256.0
+offset_right = 468.0
+offset_bottom = 80.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 32
+text = "▶"
+metadata/action = "move_right"
+
+[node name="RotateCounterclockwise" type="Button" parent="GameplayControls"]
+layout_mode = 0
+offset_left = 32.0
+offset_top = 92.0
+offset_right = 182.0
+offset_bottom = 164.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 32
+text = "⟲"
+metadata/action = "rotate_ccw"
+
+[node name="SoftDrop" type="Button" parent="GameplayControls"]
+layout_mode = 0
+offset_left = 194.0
+offset_top = 92.0
+offset_right = 306.0
+offset_bottom = 164.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 32
+text = "▼"
+metadata/action = "soft_drop"
+
+[node name="RotateClockwise" type="Button" parent="GameplayControls"]
+layout_mode = 0
+offset_left = 318.0
+offset_top = 92.0
+offset_right = 468.0
+offset_bottom = 164.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 32
+text = "⟳"
+metadata/action = "rotate_cw"
