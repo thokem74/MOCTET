@@ -12,13 +12,14 @@ Clear lines on a 10 × 20 board, preview the next three pieces, and use the ghos
 | Soft drop | Press and keep ▼ down | Down |
 | Rotate clockwise | ⟳ | Up |
 | Rotate counterclockwise | ⟲ | Z |
-| Hard drop | ⤓ | Space |
 | Pause / resume | PAUSE | P |
 | Restart | RESTART | R |
 | Toggle music | ♪ | — |
 | Quit | — | Q / Escape |
 
 Touch actions activate on contact and support multiple fingers, so you can move or rotate while pressing soft drop. Sliding off soft drop, releasing the finger, pausing, or leaving the app clears the pressed input.
+
+Pieces descend automatically. Soft drop moves them down one cell at a time at a faster rate and awards one point per cell. A piece locks after resting on the stack or floor for half a second; clearing lines also earns points.
 
 The layout scales to the available screen area, keeps the board near the top and controls near the bottom, and respects Android display cutouts. It has been checked on a Samsung SM-A176B at 1080 × 2340.
 

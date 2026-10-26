@@ -44,8 +44,7 @@ func _build_controls() -> void:
 	_create_button("▼", "soft_drop", Vector2(60, 758))
 	_create_button("⟲", "rotate_ccw", Vector2(270, 700))
 	_create_button("⟳", "rotate_cw", Vector2(350, 700))
-	_create_button("⤓", "hard_drop", Vector2(310, 758))
-	_create_button("♪", "music", Vector2(400, 758))
+	_create_button("♪", "music", Vector2(310, 758))
 	_create_button("PAUSE", "pause", Vector2(20, 816), Vector2(220, 48))
 	_create_button("RESTART", "restart", Vector2(260, 816), Vector2(220, 48))
 
@@ -202,10 +201,6 @@ func _on_action(action: String) -> void:
 			if game.move(0, 1):
 				game.score += 1
 			fall_timer = 0.0
-		"hard_drop":
-			game.hard_drop()
-			fall_timer = 0.0
-			lock_timer = -1.0
 		"rotate_cw": _changed(game.rotate(true))
 		"rotate_ccw": _changed(game.rotate(false))
 	queue_redraw()
@@ -230,8 +225,6 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		_on_action("restart")
 	elif event.keycode == KEY_P:
 		_on_action("pause")
-	elif event.keycode == KEY_SPACE:
-		_on_action("hard_drop")
 	elif event.keycode == KEY_LEFT:
 		_on_action("move_left")
 	elif event.keycode == KEY_RIGHT:

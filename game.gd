@@ -103,14 +103,6 @@ func ghost_y() -> int:
 		target += 1
 	return target
 
-func hard_drop() -> void:
-	if over:
-		return
-	var target := ghost_y()
-	score += (target - y) * 2
-	y = target
-	lock_piece()
-
 func lock_piece() -> void:
 	if over:
 		return

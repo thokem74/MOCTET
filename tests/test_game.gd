@@ -5,7 +5,7 @@ var failures := 0
 
 func _initialize() -> void:
 	test_seven_bag()
-	test_drop_and_score()
+	test_landing_preview_and_lock()
 	test_queue_advances_after_lock()
 	test_reset()
 	test_lines_and_level()
@@ -28,25 +28,25 @@ func test_seven_bag() -> void:
 		unique[piece] = true
 	_check(unique.size() == 7)
 
-func test_drop_and_score() -> void:
+func test_landing_preview_and_lock() -> void:
 	var game := Game.new(3)
 	game.spawn("O")
 	_check(game.ghost_y() == 18)
-	game.hard_drop()
-	_check(game.score == 36)
+	_settle_piece(game)
+	_check(game.score == 0)
 	_check(_filled(game) == 4)
 
 func test_queue_advances_after_lock() -> void:
 	var game := Game.new(2)
 	var next: String = game.queue[0]
-	game.hard_drop()
+	_settle_piece(game)
 	_check(game.kind == next)
 	_check(game.y == 0)
 	_check(_filled(game) == 4)
 
 func test_reset() -> void:
 	var game := Game.new(2)
-	game.hard_drop()
+	_settle_piece(game)
 	game.lines = 12
 	game.over = true
 	game.notice = "SESSION OVER"
@@ -87,3 +87,8 @@ func _filled(game: MoctetGame) -> int:
 			if not cell.is_empty():
 				count += 1
 	return count
+
+func _settle_piece(game: MoctetGame) -> void:
+	while game.move(0, 1):
+		pass
+	game.lock_piece()

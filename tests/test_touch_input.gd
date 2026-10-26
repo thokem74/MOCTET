@@ -18,9 +18,16 @@ func _run() -> void:
 	main.game.spawn("T")
 	var start_x: int = main.game.x
 	var start_y: int = main.game.y
+	var space := InputEventKey.new()
+	space.keycode = KEY_SPACE
+	space.pressed = true
+	root.push_input(space, true)
+	_check(main.game.y == start_y, "Space does not move the piece")
+	var start_score: int = main.game.score
 	_touch(0, "soft_drop", true)
 	_check(main.soft_drop_held, "Soft drop starts on touch down")
 	_check(main.game.y == start_y + 1, "Touch down performs exactly one drop")
+	_check(main.game.score == start_score + 1, "Soft drop awards one point per cell")
 	_touch(1, "move_left", true)
 	_check(main.game.x == start_x - 1, "A second finger moves while drop is held")
 	_check(main.soft_drop_held, "Second finger does not release drop")
