@@ -21,7 +21,7 @@ Touch actions activate on contact and support multiple fingers, so you can move 
 
 Pieces descend automatically. Soft drop moves them down one cell at a time at a faster rate and awards one point per cell. A piece locks after resting on the stack or floor for half a second; clearing lines also earns points.
 
-The layout scales to the available screen area and respects Android display cutouts. Pause, Restart, and Music form a vertical stack just right of the grid's bottom-right corner. Movement and rotation controls stay near the bottom of the screen. The layout has been checked on a Samsung SM-A176B at 1080 × 2340.
+The layout scales to the available screen area and respects Android display cutouts. Large gameplay buttons are centered in the space below the grid and status text: **⟲ ◀ ▶ ⟳** across the top, with **▼** centered underneath. Movement and rotation buttons measure 100 × 80 design units; soft drop measures 112 × 72, with 12-unit gaps. Pause, Restart, and Music form a larger 90 × 64-button stack just right of the grid's bottom-right corner. The layout has been checked on a Samsung SM-A176B at 1080 × 2340.
 
 ## Run
 

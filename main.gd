@@ -39,27 +39,27 @@ func _build_controls() -> void:
 		if child is Button:
 			child.queue_free()
 	buttons.clear()
-	_create_button("◀", "move_left", Vector2(20, 700))
-	_create_button("▶", "move_right", Vector2(100, 700))
-	_create_button("▼", "soft_drop", Vector2(60, 758))
-	_create_button("⟲", "rotate_ccw", Vector2(270, 700))
-	_create_button("⟳", "rotate_cw", Vector2(350, 700))
-	_create_button("PAUSE", "pause", Vector2(400, 472), Vector2(80, 48), false)
-	_create_button("RESTART", "restart", Vector2(400, 530), Vector2(80, 48), false)
-	_create_button("MUSIC ON" if music_enabled else "MUSIC OFF", "music", Vector2(400, 588), Vector2(80, 48), false)
+	_create_button("⟲", "rotate_ccw", Vector2(32, 0))
+	_create_button("◀", "move_left", Vector2(144, 0))
+	_create_button("▶", "move_right", Vector2(256, 0))
+	_create_button("⟳", "rotate_cw", Vector2(368, 0))
+	_create_button("▼", "soft_drop", Vector2(194, 92), Vector2(112, 72))
+	_create_button("PAUSE", "pause", Vector2(400, 420), Vector2(90, 64), false)
+	_create_button("RESTART", "restart", Vector2(400, 496), Vector2(90, 64), false)
+	_create_button("MUSIC ON" if music_enabled else "MUSIC OFF", "music", Vector2(400, 572), Vector2(90, 64), false)
 
-func _create_button(label: String, action: String, base: Vector2, size := Vector2(60, 48), bottom_aligned := true) -> void:
+func _create_button(label: String, action: String, base: Vector2, size := Vector2(100, 80), gameplay_group := true) -> void:
 	var button := Button.new()
 	button.text = label
 	button.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
 	button.focus_mode = Control.FOCUS_NONE
-	button.add_theme_font_size_override("font_size", 18 if label.length() < 5 else 13)
+	button.add_theme_font_size_override("font_size", 32 if gameplay_group else 15)
 	button.add_theme_color_override("font_color", TEXT)
 	button.add_theme_color_override("font_hover_color", Color.WHITE)
 	button.add_theme_stylebox_override("normal", _button_box(PANEL))
 	button.add_theme_stylebox_override("pressed", _button_box(Color("#2d3450")))
 	button.set_meta("action", action)
-	button.set_meta("bottom_aligned", bottom_aligned)
+	button.set_meta("gameplay_group", gameplay_group)
 	if action == "soft_drop":
 		button.button_down.connect(_on_soft_drop_down)
 		button.button_up.connect(_on_soft_drop_up)
@@ -84,9 +84,9 @@ func _layout_button(button: Button, base: Vector2, button_size: Vector2) -> void
 	var area := _layout_area()
 	var scale := _layout_scale(area)
 	var origin := _layout_origin(area, scale)
+	if button.get_meta("gameplay_group"):
+		origin = _gameplay_origin(area, scale)
 	button.position = origin + base * scale
-	if button.get_meta("bottom_aligned"):
-		button.position.y += _controls_offset(area, scale)
 	button.scale = Vector2.ONE * scale
 	button.size = button_size
 	button.set_meta("base", base)
@@ -110,8 +110,12 @@ func _layout_scale(area: Rect2) -> float:
 func _layout_origin(area: Rect2, scale: float) -> Vector2:
 	return area.position + Vector2((area.size.x - 500.0 * scale) * 0.5, 0)
 
-func _controls_offset(area: Rect2, scale: float) -> float:
-	return maxf(0.0, area.size.y - 900.0 * scale)
+func _gameplay_origin(area: Rect2, scale: float) -> Vector2:
+	var origin := _layout_origin(area, scale)
+	# Reserve space for status text below the grid and a safe bottom margin.
+	var top := origin.y + 700.0 * scale
+	var bottom := area.end.y - 24.0 * scale
+	return Vector2(origin.x, (top + bottom - 164.0 * scale) * 0.5)
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
@@ -266,7 +270,6 @@ func _draw() -> void:
 	var area := _layout_area()
 	var scale := _layout_scale(area)
 	var origin := _layout_origin(area, scale)
-	var controls_offset := Vector2(0, _controls_offset(area, scale))
 	var font := ThemeDB.fallback_font
 	_draw_text(font, origin + Vector2(20, 34) * scale, "M O C T E T", 24, ACCENT, scale)
 	_draw_text(font, origin + Vector2(20, 56) * scale, "TOKYO NIGHT BLOCK SESSION", 11, MUTED, scale)
@@ -297,8 +300,8 @@ func _draw() -> void:
 	_draw_text(font, origin + Vector2(405, 300) * scale, "LEVEL", 12, MUTED, scale)
 	_draw_text(font, origin + Vector2(405, 326) * scale, "%02d" % game.get_level(), 20, TEXT, scale)
 	_draw_text(font, origin + Vector2(20, 365) * scale, "LINES  %03d" % game.lines, 13, MUTED, scale)
-	_draw_text(font, origin + controls_offset + Vector2(20, 665) * scale, game.notice, 11, ACCENT, scale)
-	_draw_text(font, origin + controls_offset + Vector2(20, 685) * scale, "[ PAUSED ]" if paused else "[ SESSION OVER ]" if game.over else "[ IN FLOW ]", 14, ACCENT, scale)
+	_draw_text(font, origin + Vector2(20, 665) * scale, game.notice, 11, ACCENT, scale)
+	_draw_text(font, origin + Vector2(20, 685) * scale, "[ PAUSED ]" if paused else "[ SESSION OVER ]" if game.over else "[ IN FLOW ]", 14, ACCENT, scale)
 	if paused or game.over:
 		var overlay := Rect2(board_rect.position + Vector2(12, 250) * scale, Vector2(256, 90) * scale)
 		draw_rect(overlay, Color("#24283b"))
