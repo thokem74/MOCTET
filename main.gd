@@ -44,11 +44,11 @@ func _build_controls() -> void:
 	_create_button("▼", "soft_drop", Vector2(60, 758))
 	_create_button("⟲", "rotate_ccw", Vector2(270, 700))
 	_create_button("⟳", "rotate_cw", Vector2(350, 700))
-	_create_button("♪", "music", Vector2(310, 758))
-	_create_button("PAUSE", "pause", Vector2(20, 816), Vector2(220, 48))
-	_create_button("RESTART", "restart", Vector2(260, 816), Vector2(220, 48))
+	_create_button("PAUSE", "pause", Vector2(400, 472), Vector2(80, 48), false)
+	_create_button("RESTART", "restart", Vector2(400, 530), Vector2(80, 48), false)
+	_create_button("MUSIC ON" if music_enabled else "MUSIC OFF", "music", Vector2(400, 588), Vector2(80, 48), false)
 
-func _create_button(label: String, action: String, base: Vector2, size := Vector2(60, 48)) -> void:
+func _create_button(label: String, action: String, base: Vector2, size := Vector2(60, 48), bottom_aligned := true) -> void:
 	var button := Button.new()
 	button.text = label
 	button.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
@@ -59,6 +59,7 @@ func _create_button(label: String, action: String, base: Vector2, size := Vector
 	button.add_theme_stylebox_override("normal", _button_box(PANEL))
 	button.add_theme_stylebox_override("pressed", _button_box(Color("#2d3450")))
 	button.set_meta("action", action)
+	button.set_meta("bottom_aligned", bottom_aligned)
 	if action == "soft_drop":
 		button.button_down.connect(_on_soft_drop_down)
 		button.button_up.connect(_on_soft_drop_up)
@@ -83,7 +84,9 @@ func _layout_button(button: Button, base: Vector2, button_size: Vector2) -> void
 	var area := _layout_area()
 	var scale := _layout_scale(area)
 	var origin := _layout_origin(area, scale)
-	button.position = origin + base * scale + Vector2(0, _controls_offset(area, scale))
+	button.position = origin + base * scale
+	if button.get_meta("bottom_aligned"):
+		button.position.y += _controls_offset(area, scale)
 	button.scale = Vector2.ONE * scale
 	button.size = button_size
 	button.set_meta("base", base)
@@ -184,6 +187,9 @@ func _on_action(action: String) -> void:
 	if action == "music":
 		music_enabled = not music_enabled
 		music.set_enabled(music_enabled)
+		for button in buttons:
+			if button.get_meta("action") == "music":
+				button.text = "MUSIC ON" if music_enabled else "MUSIC OFF"
 		queue_redraw()
 		return
 	if action == "pause":

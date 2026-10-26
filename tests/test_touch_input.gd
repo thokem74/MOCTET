@@ -98,9 +98,25 @@ func _run() -> void:
 		var area: Rect2 = main._layout_area()
 		for button in main.buttons:
 			_check(area.encloses(button.get_global_rect()), "Button stays inside viewport at %s" % viewport_size)
-		var last_button := _button("restart")
+		var last_button := _button("soft_drop")
 		var bottom_gap: float = area.end.y - last_button.get_global_rect().end.y
-		_check(is_equal_approx(bottom_gap, 36.0 * main._layout_scale(area)), "Controls stay anchored to bottom")
+		var scale: float = main._layout_scale(area)
+		_check(is_equal_approx(bottom_gap, 94.0 * scale), "Movement controls stay anchored to bottom")
+		var origin: Vector2 = main._layout_origin(area, scale)
+		var grid := Rect2(origin + Vector2(110, 76) * scale, Vector2(280, 560) * scale)
+		var previous_bottom := grid.position.y
+		for action in ["pause", "restart", "music"]:
+			var rect := _button(action).get_global_rect()
+			_check(rect.position.x > grid.end.x, "Side controls stay to the right of the grid")
+			_check(rect.position.y > previous_bottom, "Side controls form a stack without overlapping")
+			previous_bottom = rect.end.y
+		_check(is_equal_approx(previous_bottom, grid.end.y), "Side controls align with grid bottom")
+		_touch(1, "music", true)
+		_touch(1, "music", false)
+		_check(not main.music_enabled and _button("music").text == "MUSIC OFF", "Music toggle works after resizing")
+		_touch(1, "music", true)
+		_touch(1, "music", false)
+		_check(main.music_enabled and _button("music").text == "MUSIC ON", "Music label follows playback setting")
 		start_x = main.game.x
 		for tap in range(3):
 			_touch(0, "move_left", true)
