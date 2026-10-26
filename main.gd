@@ -294,11 +294,11 @@ func _draw() -> void:
 			if cell.y >= 0:
 				var piece_rect := Rect2(board_rect.position + Vector2(cell.x * 28 + 3, cell.y * 28 + 3) * scale, Vector2(25, 25) * scale)
 				draw_rect(piece_rect, PIECE_COLORS[game.kind])
-	_draw_next(font, origin + Vector2(405, 76) * scale, scale)
+	_draw_next(font, origin + Vector2(405, 140) * scale, scale)
 	_draw_counter(font, origin + Vector2(10, 76) * scale, "SCORE", game.score, scale)
 	_draw_counter(font, origin + Vector2(10, 140) * scale, "LINES", game.lines, scale)
-	_draw_text(font, origin + Vector2(405, 300) * scale, "LEVEL", 12, MUTED, scale)
-	_draw_text(font, origin + Vector2(405, 326) * scale, "%02d" % game.get_level(), 20, TEXT, scale)
+	_draw_text(font, origin + Vector2(405, 76) * scale, "LEVEL", 12, MUTED, scale)
+	_draw_text(font, origin + Vector2(405, 102) * scale, "%02d" % game.get_level(), 20, TEXT, scale)
 	_draw_text(font, origin + Vector2(20, 665) * scale, game.notice, 11, ACCENT, scale)
 	_draw_text(font, origin + Vector2(20, 685) * scale, "[ PAUSED ]" if paused else "[ SESSION OVER ]" if game.over else "[ IN FLOW ]", 14, ACCENT, scale)
 	if paused or game.over:
