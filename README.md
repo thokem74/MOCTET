@@ -4,6 +4,8 @@ A portrait falling-block game for Android, built with Godot 4.7 and an Omarchy-i
 
 Clear lines on a 10 × 20 board, preview the next three pieces, and use the ghost outline to plan each landing. Levels increase every 10 lines, speeding up the falling pieces.
 
+Score and Lines are stacked beside the grid's upper-left corner, with matching labels and eight-digit counters.
+
 ## Controls
 
 | Action | Touch | Keyboard |
