@@ -81,13 +81,35 @@ func _button_box(color: Color) -> StyleBoxFlat:
 	return box
 
 func _layout_button(button: Button, base: Vector2, button_size: Vector2) -> void:
-	var viewport_size := get_viewport_rect().size
-	var scale := minf(viewport_size.x / 500.0, viewport_size.y / 900.0)
-	var origin := Vector2((viewport_size.x - 500.0 * scale) * 0.5, maxf(0.0, viewport_size.y - 900.0 * scale))
-	button.position = origin + base * scale
-	button.size = button_size * scale
+	var area := _layout_area()
+	var scale := _layout_scale(area)
+	var origin := _layout_origin(area, scale)
+	button.position = origin + base * scale + Vector2(0, _controls_offset(area, scale))
+	button.scale = Vector2.ONE * scale
+	button.size = button_size
 	button.set_meta("base", base)
 	button.set_meta("button_size", button_size)
+
+func _layout_area() -> Rect2:
+	var area := get_viewport_rect()
+	if OS.get_name() == "Android":
+		# Android exports draw edge to edge. Convert physical safe-area pixels
+		# into the stretched viewport's coordinates before laying out content.
+		var screen_size := Vector2(DisplayServer.screen_get_size())
+		var safe_area := Rect2(DisplayServer.get_display_safe_area())
+		if screen_size.x > 0 and screen_size.y > 0 and safe_area.has_area():
+			var ratio := area.size / screen_size
+			area = area.intersection(Rect2(safe_area.position * ratio, safe_area.size * ratio))
+	return area
+
+func _layout_scale(area: Rect2) -> float:
+	return minf(area.size.x / 500.0, area.size.y / 900.0)
+
+func _layout_origin(area: Rect2, scale: float) -> Vector2:
+	return area.position + Vector2((area.size.x - 500.0 * scale) * 0.5, 0)
+
+func _controls_offset(area: Rect2, scale: float) -> float:
+	return maxf(0.0, area.size.y - 900.0 * scale)
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
@@ -250,8 +272,10 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), BG)
-	var scale := minf(size.x / 500.0, size.y / 900.0)
-	var origin := Vector2((size.x - 500.0 * scale) * 0.5, maxf(0.0, size.y - 900.0 * scale))
+	var area := _layout_area()
+	var scale := _layout_scale(area)
+	var origin := _layout_origin(area, scale)
+	var controls_offset := Vector2(0, _controls_offset(area, scale))
 	var font := ThemeDB.fallback_font
 	_draw_text(font, origin + Vector2(20, 34) * scale, "M O C T E T", 24, ACCENT, scale)
 	_draw_text(font, origin + Vector2(20, 56) * scale, "TOKYO NIGHT BLOCK SESSION", 11, MUTED, scale)
@@ -283,8 +307,8 @@ func _draw() -> void:
 	_draw_text(font, origin + Vector2(405, 300) * scale, "LEVEL", 12, MUTED, scale)
 	_draw_text(font, origin + Vector2(405, 326) * scale, "%02d" % game.get_level(), 20, TEXT, scale)
 	_draw_text(font, origin + Vector2(20, 365) * scale, "LINES  %03d" % game.lines, 13, MUTED, scale)
-	_draw_text(font, origin + Vector2(20, 665) * scale, game.notice, 11, ACCENT, scale)
-	_draw_text(font, origin + Vector2(20, 685) * scale, "[ PAUSED ]" if paused else "[ SESSION OVER ]" if game.over else "[ IN FLOW ]", 14, ACCENT, scale)
+	_draw_text(font, origin + controls_offset + Vector2(20, 665) * scale, game.notice, 11, ACCENT, scale)
+	_draw_text(font, origin + controls_offset + Vector2(20, 685) * scale, "[ PAUSED ]" if paused else "[ SESSION OVER ]" if game.over else "[ IN FLOW ]", 14, ACCENT, scale)
 	if paused or game.over:
 		var overlay := Rect2(board_rect.position + Vector2(12, 250) * scale, Vector2(256, 90) * scale)
 		draw_rect(overlay, Color("#24283b"))

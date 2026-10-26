@@ -83,11 +83,17 @@ func _run() -> void:
 	_check(root.gui_get_focus_owner() == null, "Buttons do not steal gameplay keys")
 
 	# Hit testing follows the same viewport coordinates as the drawn controls.
-	for viewport_size in [Vector2i(500, 1100), Vector2i(720, 1280)]:
+	for viewport_size in [Vector2i(500, 1100), Vector2i(720, 1280), Vector2i(1080, 2340)]:
 		root.size = viewport_size
 		await process_frame
 		main._on_action("restart")
 		main.game.spawn("T")
+		var area: Rect2 = main._layout_area()
+		for button in main.buttons:
+			_check(area.encloses(button.get_global_rect()), "Button stays inside viewport at %s" % viewport_size)
+		var last_button := _button("restart")
+		var bottom_gap: float = area.end.y - last_button.get_global_rect().end.y
+		_check(is_equal_approx(bottom_gap, 36.0 * main._layout_scale(area)), "Controls stay anchored to bottom")
 		start_x = main.game.x
 		for tap in range(3):
 			_touch(0, "move_left", true)
